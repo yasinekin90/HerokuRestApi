@@ -1,22 +1,25 @@
 import POJOS.AuthPojo;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.hamcrest.Matchers;
+import org.json.JSONArray;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
 import static io.restassured.RestAssured.*;
 
 /**
  * given()
- * content-typ,set cookies,add auth ,add param,set headers info etc..
+ * content-type,set cookies,add auth ,add param,set headers info etc..
  *
  * when()
  * get,post,put,delete
  *
  * then()
- *
- * validate status code,extract response,extract headers cookies & response body...
+ *validate status code,extract response,extract headers cookies & response body...
  */
 import static ReusableMethods.ReusableMethods.*;
+import static org.hamcrest.Matchers.*;
 
 
 public class HerokuHttpRequests {
@@ -30,34 +33,30 @@ public class HerokuHttpRequests {
         AuthPojo authPojo = new AuthPojo("admin", "password123");
         RestAssured.baseURI = "https://restful-booker.herokuapp.com";
 
-        String response =
+        Response response =
                 given().header("Content-Type", "application/json")
                         .and().body(authPojo)
                         .when().post("/auth")
                         .then().assertThat().statusCode(Matchers.oneOf(200, 201))
-                        .extract().response().asString();
+                        .extract().response();
 
-        token = rawToJson(response).getString("token");
-
-
-
-
+        token = response.jsonPath().getString("token");
     }
 
     @Test(priority = 1)
     public void createBooking() {
-        String response = given().header("Authorization", "Bearer " + token)
+        Response response = given().header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .and().body(jsonPayLoad())
                 .when().post("/booking")
                 .then().assertThat()
-                .statusCode(Matchers.oneOf(200,201))
+                .statusCode(Matchers.oneOf(200, 201))
                 .contentType("application/json; charset=utf-8")
-                .header("Connection","keep-alive").extract().response().asString();
+                .header("Connection", "keep-alive").extract().response();
 
 
-        id = rawToJson(response).getInt("bookingid");
+        id = response.jsonPath().getInt("bookingid");
 
     }
 
@@ -65,22 +64,42 @@ public class HerokuHttpRequests {
     public void getBook() {
         given().header("Authorization", "Bearer " + token)
                 .when().get("/booking/" + id)
-                .then().assertThat().statusCode(Matchers.oneOf(200, 201)).log().all();
+                .then().assertThat()
+                .statusCode(Matchers.oneOf(200, 201))
+                .log().all();
 
 
     }
 
     @Test(priority = 3)
+    public void getBookings() {
+        Response response = given().header("Authorization", "Bearer " + token)
+                .when().get("/booking")
+                .then().assertThat()
+                .statusCode(oneOf(200, 201))
+                .extract().response();
+        JSONArray jo = new JSONArray(response.asString());
+
+        System.out.println(jo.getJSONObject(0).get("bookingid"));
+
+
+    }
+
+    @Test(priority = 4)
     public void updateBooking() {
-        given().header("Authorization", "Bearer " + token)
+        Response response = given().header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .header("Cookie", "token=" + token)
                 .and().body(jsonPayLoad())
-                .when().put("/booking/" + id).then().assertThat().statusCode(Matchers.oneOf(200, 201)).log().all();
+                .when().put("/booking/" + id)
+                .then().assertThat().statusCode(Matchers.oneOf(200, 201))
+                .log().all().extract().response();
+
+
     }
 
-    @Test(priority = 4)
+    @Test(priority = 5)
     public void deleteBooking() {
         given().header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json")
@@ -91,7 +110,7 @@ public class HerokuHttpRequests {
                 .statusCode(Matchers.oneOf(200, 201))
                 .contentType("text/plain; charset=utf-8")
                 .header("Server", "Cowboy")
-                .body(Matchers.equalTo("Created"))
+                .body(equalTo("Created"))
                 .log().all();
     }
 

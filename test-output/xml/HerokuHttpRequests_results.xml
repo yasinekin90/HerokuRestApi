@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="RestAssuredWithPavan"
+           tests="1"
+           failures="0"
+           errors="0"
+           skipped="0"
+           time="0.969">
+    <properties></properties>
+
+
+
+            <testcase
+                name="getBookings"
+                time="0.969"
+                classname="HerokuHttpRequests">
+            </testcase>
+</testsuite>

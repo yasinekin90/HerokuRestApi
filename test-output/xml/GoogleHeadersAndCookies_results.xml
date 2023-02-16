@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="RestAssuredWithPavan"
+           tests="2"
+           failures="0"
+           errors="0"
+           skipped="0"
+           time="17.450">
+    <properties></properties>
+
+
+
+            <testcase
+                name="getCookies"
+                time="17.450"
+                classname="GoogleHeadersAndCookies">
+            </testcase>
+            <testcase
+                name="getHeaders"
+                time="0.000"
+                classname="GoogleHeadersAndCookies">
+            </testcase>
+</testsuite>
